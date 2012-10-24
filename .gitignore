@@ -1,0 +1,8 @@
+chef/cookbooks
+chef/data_bags
+chef/roles
+chef/*.pem
+post-vagrant
+Berksfile.lock
+*.tgz
+

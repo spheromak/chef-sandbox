@@ -2,6 +2,7 @@ chef/cookbooks
 chef/data_bags
 chef/roles
 chef/*.pem
+.vagrant
 post-vagrant
 Berksfile.lock
 *.tgz

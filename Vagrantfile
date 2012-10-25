@@ -1,8 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 #
-require 'berkshelf/vagrant'
-
+# require 'berkshelf/vagrant'
 Vagrant::Config.run do |config|
   # centos 6.3
   config.vm.box = "opscode-ubuntu-12.04"
@@ -41,20 +40,34 @@ Vagrant::Config.run do |config|
  
 end
 
-#      def cleanup
-#        if env[:vm].config.vm.host_name
-#          puts `sh -c 'knife client delete #{env[:vm].config.vm.host_name} -y'`
-#          puts `sh -c 'knife node delete #{env[:vm].config.vm.host_name} -y'`
-#
-#          # remove validator and vagrant keys
-#          if env[:vm].config.vm.host_name == "server"
-#            puts `sh -c 'rm chef/validation.pem'`
-#            puts `sh -c 'rm chef/vagrant.pem'`
-#          end
-#        else
-#          puts "No host_name was defined for the box... unable to remove it from chef"
-#        end
-#      end
-#    end
-#  end
-#end
+module Vagrant
+  module Provisioners
+    class Base
+      require 'chef'
+      require 'chef/config'
+      require 'chef/knife'
+
+      def cleanup
+        ::Chef::Config.from_file(File.join( File.dirname(__FILE__), 'chef', 'knife.rb'))
+        node =  env[:vm].config.vm.host_name
+        puts "Node Name: #{node}"
+        if node
+
+          if node == "server"
+            puts "Cleaning up Validator key"
+            File.unlink "chef/validation.pem"
+            puts "Cleaning up Knife key"
+            File.unlink "chef/vagrant.pem"
+            return
+          end
+
+          puts "cleaning up #{node} on chef server"
+          ::Chef::Node.delete node 
+          ::Chef::Client.delete node
+
+        end
+      end
+
+    end
+  end
+end

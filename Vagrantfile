@@ -16,7 +16,7 @@ Vagrant::Config.run do |config|
       chef.cookbooks_path = "chef/cookbooks"
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
-      %w{bash::rcfiles vim tmux chef-server::rubygems-install post-vagrant::server}.each do |recipe|
+      %w{bash::rcfiles vim tmux chef-server::rubygems-install vagrant-post::server}.each do |recipe|
         chef.add_recipe recipe
       end
     end
@@ -28,10 +28,10 @@ Vagrant::Config.run do |config|
     client.vm.network :bridged
 
     client.vm.provision :chef_client do |chef|
-      chef.add_recipe "post-vagrant::client"
+      chef.add_recipe "vagrant-popst::client"
       chef.chef_server_url = "http://192.168.1.10:4000"
       chef.validation_key_path = "chef/validation.pem"
-      %w{bash::rcfiles vim tmux post-vagrant::client}.each do |recipe|
+      %w{bash::rcfiles vim tmux vagrant-post::client}.each do |recipe|
         chef.add_recipe recipe
       end
       chef.json = { :chef_server => "http://192.168.1.10:4000" }

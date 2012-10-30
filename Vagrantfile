@@ -6,8 +6,8 @@ Vagrant::Config.run do |config|
   # centos 6.3
   config.vm.box = "opscode-ubuntu-12.04"
   config.vm.box_url =  "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-ubuntu-12.04.box"
-
   config.vm.define :server do |server|
+    server.vm.host_name = "server"
     server.vm.boot_mode =  :headless
     server.vm.network  :hostonly, "192.168.1.10"
     #server.vm.network :bridged
@@ -23,12 +23,13 @@ Vagrant::Config.run do |config|
   end
 
   config.vm.define :client1 do |client|
+    client.vm.host_name = "client1"
     client.vm.boot_mode = :gui
     client.vm.network :hostonly, "192.168.1.11"
     client.vm.network :bridged
 
     client.vm.provision :chef_client do |chef|
-      chef.add_recipe "vagrant-popst::client"
+      chef.add_recipe "vagrant-post::client"
       chef.chef_server_url = "http://192.168.1.10:4000"
       chef.validation_key_path = "chef/validation.pem"
       %w{bash::rcfiles vim tmux vagrant-post::client}.each do |recipe|

@@ -25,25 +25,14 @@ Install The Required gems
 
       bundle install
 
-Pull cookbooks used for chef-solo
+Vagrant UP!
 
-      berks install --path chef/cookboks
+      vagrant up 
 
-Start your server
+This should provision your server and a single client.
 
-      vagrant up server
-
-Upload cookbooks to your server
-
-      berks upload
-
-Start your client
-
-      vagrant up client1
 
 Next Steps
 ----
-  I would like for this all to be jsut a vagrant up, right now berkshelf
-has some vagrant integration going on, and I intend to make this more transparent
 I started this project cause I wanted to be able to test multi-vm setups in 
 jenkins, and as time permits I will continue to push updates.

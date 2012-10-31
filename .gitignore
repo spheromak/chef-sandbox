@@ -1,6 +1,7 @@
 chef/cookbooks
 chef/data_bags
 chef/checksums
+chef/environments
 chef/roles
 chef/*.pem
 .vagrant

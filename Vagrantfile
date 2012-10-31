@@ -3,9 +3,18 @@
 #
 # require 'berkshelf/vagrant'
 Vagrant::Config.run do |config|
+
+  # 
   # centos 6.3
+  # config.vm.box = "opscode-centos-6.3"
+  # config.vm.box_url "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-centos-6.3.box"
+  #
+  #
+  
   config.vm.box = "opscode-ubuntu-12.04"
   config.vm.box_url =  "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-ubuntu-12.04.box"
+
+
   config.vm.define :server do |server|
     server.vm.host_name = "server"
     server.vm.boot_mode =  :headless

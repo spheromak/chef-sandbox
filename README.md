@@ -14,24 +14,31 @@ should clean up when vagrant destroy is ran.
 Installing
 ----
 Clone this repo
+
       git clone git://github.com/spheromak/chef-sandbox.git
 
 Get in that repo
+
       cd chef-sandbox
 
 Install The Required gems
+
       bundle install
 
 Pull cookbooks used for chef-solo
+
       berks install --path chef/cookboks
 
 Start your server
+
       vagrant up server
 
 Upload cookbooks to your server
+
       berks upload
 
 Start your client
+
       vagrant up client1
 
 Next Steps

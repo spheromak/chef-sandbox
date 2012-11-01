@@ -9,4 +9,4 @@ validation_key           '/etc/chef/validation.pem'
 chef_server_url          'http://localhost:4000'
 cache_type               'BasicFile'
 cache_options( :path => "#{cfg_dir}/checksums" )
-cookbook_path [ "#{cfg_dir}/chef/cookbooks" ]
+cookbook_path [ "#{cfg_dir}/cookbooks" ]

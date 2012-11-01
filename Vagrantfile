@@ -25,7 +25,7 @@ Vagrant::Config.run do |config|
       #chef.cookbooks_path = "chef/cookbooks"
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
-      %w{bash::rcfiles vim tmux chef-server::rubygems-install vagrant-post::server}.each do |recipe|
+      %w{bash::rcfiles vim tmux apt chef-server::rubygems-install vagrant-post::server}.each do |recipe|
         chef.add_recipe recipe
       end
     end
@@ -36,6 +36,9 @@ Vagrant::Config.run do |config|
     client.vm.boot_mode = :gui
     client.vm.network :hostonly, "192.168.1.11"
     client.vm.network :bridged
+
+    client.berkshelf.node_name  = "vagrant"
+    client.berkshelf.client_key = "chef/vagrant.pem" 
 
     client.vm.provision :chef_client do |chef|
       chef.add_recipe "vagrant-post::client"
@@ -56,25 +59,24 @@ module Vagrant
       require 'chef'
       require 'chef/config'
       require 'chef/knife'
-      
-      ::Chef::Config.from_file(File.join( File.dirname(__FILE__), 'chef', 'knife.rb'))
     end
 
     class ChefSolo 
       def cleanup
         node =  env[:vm].config.vm.host_name
-        puts "Clening up chef client/node: #{node}"
         if node == "server"
           puts "Cleaning up Validator key"
-          File.unlink "chef/validation.pem"
-          puts "Cleaning up Knife key"
-          File.unlink "chef/vagrant.pem"
+          File.unlink "chef/validation.pem" if File.exists? "chef/validation.pem"
+          puts "Cleaning up Knife key" 
+          File.unlink "chef/vagrant.pem" if File.exists? "chef/vagrant.pem" 
           return
         end
       end
     end
 
     class ChefClient
+      ::Chef::Config.from_file(File.join( File.dirname(__FILE__), 'chef', 'knife.rb'))
+
       def cleanup
         node =  env[:vm].config.vm.host_name
         puts "cleaning up #{node} on chef server"

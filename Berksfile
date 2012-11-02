@@ -4,9 +4,10 @@
 #
 
 site :opscode
+
 cookbook 'chef-server', git: 'git://github.com/opscode-cookbooks/chef-server.git'
 cookbook 'ohai', git: 'git://github.com/opscode-cookbooks/ohai.git'
-cookbook 'apt'
+cookbook 'apt', git: 'https://github.com/opscode-cookbooks/apt'
 cookbook 'vim'
 cookbook 'tmux'
 cookbook 'build-essential'

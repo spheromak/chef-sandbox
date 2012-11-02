@@ -16,7 +16,7 @@ Vagrant::Config.run do |config|
 
 
   config.vm.define :server do |server|
-    server.vm.host_name = "server"
+    server.vm.host_name = "server.vm"
     server.vm.boot_mode =  :headless
     server.vm.network  :hostonly, "192.168.1.10"
     #server.vm.network :bridged
@@ -32,7 +32,7 @@ Vagrant::Config.run do |config|
   end
 
   config.vm.define :client1 do |client|
-    client.vm.host_name = "client1"
+    client.vm.host_name = "client1.vm"
     client.vm.boot_mode = :gui
     client.vm.network :hostonly, "192.168.1.11"
     client.vm.network :bridged
@@ -64,7 +64,7 @@ module Vagrant
     class ChefSolo 
       def cleanup
         node =  env[:vm].config.vm.host_name
-        if node == "server"
+        if node == "server.vm"
           puts "Cleaning up Validator key"
           File.unlink "chef/validation.pem" if File.exists? "chef/validation.pem"
           puts "Cleaning up Knife key" 

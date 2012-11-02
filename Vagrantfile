@@ -19,10 +19,8 @@ Vagrant::Config.run do |config|
     server.vm.host_name = "server.vm"
     server.vm.boot_mode =  :headless
     server.vm.network  :hostonly, "192.168.1.10"
-    #server.vm.network :bridged
     server.vm.forward_port 4000, 4000 
     server.vm.provision :chef_solo do |chef|
-      #chef.cookbooks_path = "chef/cookbooks"
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
       %w{bash::rcfiles vim tmux apt chef-server::rubygems-install vagrant-post::server}.each do |recipe|

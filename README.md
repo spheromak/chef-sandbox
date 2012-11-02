@@ -27,9 +27,20 @@ Install The Required gems
 
 Vagrant UP!
 
-      vagrant up 
+     bundle exec vagrant up 
 
 This should provision your server and a single client.
+
+
+Using
+----
+You can add more clients to the Vagrant file as-needed. 
+
+Rebuild a client
+
+     vagrant destroy client1
+
+This will  destroy the client vm and remove the client key and node from the chef server
 
 
 Next Steps

@@ -19,10 +19,8 @@ Vagrant::Config.run do |config|
     server.vm.host_name = "server.vm"
     server.vm.boot_mode =  :headless
     server.vm.network  :hostonly, "192.168.1.10"
-    #server.vm.network :bridged
     server.vm.forward_port 4000, 4000 
     server.vm.provision :chef_solo do |chef|
-      #chef.cookbooks_path = "chef/cookbooks"
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
       %w{bash::rcfiles vim tmux apt chef-server::rubygems-install vagrant-post::server}.each do |recipe|
@@ -59,6 +57,7 @@ module Vagrant
       require 'chef'
       require 'chef/config'
       require 'chef/knife'
+
     end
 
     class ChefSolo 
@@ -84,18 +83,16 @@ module Vagrant
         begin 
           ::Chef::REST.new(::Chef::Config[:chef_server_url]).delete_rest("clients/#{node}")
           ::Chef::REST.new(::Chef::Config[:chef_server_url]).delete_rest("nodes/#{node}")
-
         rescue Net::HTTPServerException => e
           if e.message == '404 "Not Found"'
             puts "Server says it doesn't exist continuing.."
           else 
-            puts e.message
-            puts e.backtrace
-            exit 1
+            puts "Server reported: #{e.message}\nYou will have to clean the client/node by hand"
           end
+        rescue Exception => e
+          puts "Caught error while cleaning node from server:\n #{e.message}\nYou will have to clean the client/node by hand"
         end
-
-      end
+      end     
     end
   end
 end

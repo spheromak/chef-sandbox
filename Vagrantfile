@@ -35,7 +35,7 @@ Vagrant::Config.run do |config|
       Sandbox.box vm
       server.vm.box = Sandbox.vagrant_box
       server.vm.box_url = Sandbox.url 
-      server.vm.host_name = "#{server}.vm"
+      server.vm.host_name = "#{vm}.vm"
       server.vm.network  :hostonly, "#{network}.#{ip}"
       server.berkshelf.node_name  = "vagrant"
       server.berkshelf.client_key = "chef/vagrant.pem" 

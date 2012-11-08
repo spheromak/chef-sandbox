@@ -6,39 +6,49 @@ require 'json'
 
 
 Vagrant::Config.run do |config|
-  Sandbox::Config.parse
+  Sandbox.config
 
+  Sandbox.box "server"
+
+  network = Sandbox.network
+  
+  server_net = "#{network}.10"
   config.vm.define :server do |server|
-    server.vm.box = Sandbox::Config.vm("server")["box"]
-    server.vm.box_url = Sandbox::Config.vm("server")["box_url"] if Sandbox::Config.vm("server").has_key? "box_url"
+    server.vm.auto_port_range = (6200..6600)
+    server.ssh.forward_agent = true
+    server.vm.box = Sandbox.vagrant_box
+    server.vm.box_url = Sandbox.url
     server.vm.host_name = "server.vm"
-    server.vm.boot_mode =  :headless
-    server.vm.network  :hostonly, "192.168.1.10"
+    server.vm.boot_mode =  :gui
+    server.vm.network  :hostonly, "172.30.10.10"
     server.vm.forward_port 4000, 4000 
     server.vm.provision :chef_solo do |chef|
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
-      chef.run_list = Sandbox::Config.run_list("server")
+      chef.run_list = Sandbox.run_list
     end
   end
 
   ip=11
-  Sandbox::Config.machines.each do |vm|
+  Sandbox.machines.each do |vm|
     next if vm == "server"
     config.vm.define vm.to_sym do |server|
-      server.vm.box = Sandbox::Config.vm(vm)["box"]
-      server.vm.box_url = Sandbox::Config.vm(vm)["box_url"] if Sandbox::Config.vm(vm).has_key? "box_url"
-      server.vm.host_name = "#{vm}.vm"
+      Sandbox.box vm
+      server.vm.auto_port_range = (7200..7600)
+      server.ssh.forward_agent = true
+      server.vm.box = Sandbox.vagrant_box
+      server.vm.box_url = Sandbox.url 
+      server.vm.host_name = "#{server}.vm"
       server.vm.boot_mode =  :headless
-      server.vm.network  :hostonly, "192.168.1.#{ip}"
+      server.vm.network  :hostonly, "#{network}.#{ip}"
       server.berkshelf.node_name  = "vagrant"
       server.berkshelf.client_key = "chef/vagrant.pem" 
       server.vm.provision :chef_client do |chef|
         chef.add_recipe "vagrant-post::client"
-        chef.chef_server_url = "http://192.168.1.10:4000"
+        chef.chef_server_url = "http://#{network}.10:4000"
         chef.validation_key_path = "chef/validation.pem"
-        chef.json = { :chef_server => "http://192.168.1.10:4000" }
-        chef.run_list = Sandbox::Config.run_list(vm)
+        chef.json = { :chef_server => "http://#{network}.10:4000" }
+        chef.run_list = Sandbox.run_list
       end
       ip += 1
     end
@@ -92,11 +102,18 @@ module Vagrant
 end
 
 class Sandbox
-  class Config 
-    class << self
-    def parse
+  class << self
+    
+    def box(value=nil)
+      @box = value if value 
+      @box
+    end
+
+    def config
       # read in ext data
       unless File.exists?(defaults_file)
+        box "server"
+
         default_run_list = %w/ recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] /
         json_data = {
               :vms => {
@@ -119,8 +136,8 @@ class Sandbox
               :boxes => {
                 "opscode-ubuntu-12.04" =>  "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-ubuntu-12.04.box",
                 "opscode-centos-6.3" => "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-centos-6.3.box"
-              
-              }
+              },
+              :network => "172.30.9"
             }
 
         puts "creating a standard defaults file in #{defaults_file}"
@@ -129,27 +146,52 @@ class Sandbox
           end
       end
 
-      @@defaults = JSON.parse(File.read(defaults_file))
+      defaults JSON.parse(File.read(defaults_file))
     end
  
     def defaults_file 
-      @@defaults_file ||=  File.expand_path File.dirname(__FILE__)  + "/.sandbox.json"
+      @defaults_file ||=  File.expand_path File.dirname(__FILE__)  + "/.sandbox.json"
     end
 
-    def defaults
-      @@defaults 
+    def defaults(value=nil)
+      @defaults = value if value
+      @defaults 
     end
 
-    def vm(box)
+    # return this box's url
+    def url
+      if defaults["vms"].has_key? box
+        if defaults["vms"][box].has_key? "box"
+          vbox = defaults["vms"][box]["box"]
+          return defaults["boxes"][vbox] 
+        end
+      end
+    end
+
+    def network
+      defaults["network"]
+    end
+
+    #
+    # pulls the vagrant_box for the current box
+    def vagrant_box
+      if defaults["vms"].has_key? box
+        if defaults["vms"][box].has_key? "box"
+          return defaults["vms"][box]["box"]
+        end
+      end
+    end
+
+    def vm
       if defaults["vms"].has_key? box
         return defaults["vms"][box]
       end
-      return false
+      raise ArgumentError, "No box found named #{box}"
     end
 
-    def run_list(box)
-      if vm(box)['run_list'].is_a? String
-        list= vm(box)['run_list']
+    def run_list
+      if vm['run_list'].is_a? String
+        list= vm['run_list']
         if defaults['run_lists'].has_key? list
           return defaults['run_lists'][list]
         end
@@ -162,6 +204,5 @@ class Sandbox
     end
 
   end
-end
 end
 

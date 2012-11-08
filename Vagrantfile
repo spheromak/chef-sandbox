@@ -9,18 +9,17 @@ Vagrant::Config.run do |config|
   Sandbox.config
 
   network = Sandbox.network
-  config.ssh.timeout = 45
+  config.ssh.timeout = 100
   config.ssh.forward_agent = true
   config.vm.auto_port_range = (6200..6600)
+  config.vm.boot_mode = :headless
   
-  server_net = "#{network}.10"
   config.vm.define :server do |server|
     Sandbox.box "server"
     server.vm.box = Sandbox.vagrant_box
     server.vm.box_url = Sandbox.url
     server.vm.host_name = "server.vm"
-    server.vm.boot_mode =  :gui
-    server.vm.network  :hostonly, "172.30.10.10"
+    server.vm.network  :hostonly, "#{network}.10"
     server.vm.forward_port 4000, 4000 
     server.vm.provision :chef_solo do |chef|
       chef.data_bags_path = "chef/data_bags"
@@ -37,7 +36,6 @@ Vagrant::Config.run do |config|
       server.vm.box = Sandbox.vagrant_box
       server.vm.box_url = Sandbox.url 
       server.vm.host_name = "#{server}.vm"
-      server.vm.boot_mode =  :headless
       server.vm.network  :hostonly, "#{network}.#{ip}"
       server.berkshelf.node_name  = "vagrant"
       server.berkshelf.client_key = "chef/vagrant.pem" 

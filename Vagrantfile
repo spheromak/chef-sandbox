@@ -13,7 +13,7 @@ Vagrant::Config.run do |config|
   config.ssh.forward_agent = true
   config.vm.auto_port_range = (6200..6600)
   config.vm.boot_mode = :headless
-  
+  config.vm.customize [ "modifyvm", :id, "--natdnshostresolver1", "on" ]
   config.vm.define :server do |server|
     Sandbox.box "server"
     server.vm.box = Sandbox.vagrant_box

@@ -8,14 +8,14 @@ require 'json'
 Vagrant::Config.run do |config|
   Sandbox.config
 
-  Sandbox.box "server"
-
   network = Sandbox.network
+  config.ssh.timeout = 45
+  config.ssh.forward_agent = true
+  config.vm.auto_port_range = (6200..6600)
   
   server_net = "#{network}.10"
   config.vm.define :server do |server|
-    server.vm.auto_port_range = (6200..6600)
-    server.ssh.forward_agent = true
+    Sandbox.box "server"
     server.vm.box = Sandbox.vagrant_box
     server.vm.box_url = Sandbox.url
     server.vm.host_name = "server.vm"
@@ -34,8 +34,6 @@ Vagrant::Config.run do |config|
     next if vm == "server"
     config.vm.define vm.to_sym do |server|
       Sandbox.box vm
-      server.vm.auto_port_range = (7200..7600)
-      server.ssh.forward_agent = true
       server.vm.box = Sandbox.vagrant_box
       server.vm.box_url = Sandbox.url 
       server.vm.host_name = "#{server}.vm"
@@ -102,107 +100,105 @@ module Vagrant
 end
 
 class Sandbox
-  class << self
-    
-    def box(value=nil)
-      @box = value if value 
-      @box
-    end
 
-    def config
-      # read in ext data
-      unless File.exists?(defaults_file)
-        box "server"
-
-        default_run_list = %w/ recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] /
-        json_data = {
-              :vms => {
-                "server" =>  { :box => "opscode-ubuntu-12.04",
-                               :run_list => "server",
-                               :attribs => {},
-                               :server => true
-                              },
-                "client1" => { :box => "opscode-ubuntu-12.04",
-                               :run_list => "client",
-                               :attribs => {} }
-              },
-              :bags => {},
-              :environments => {},
-              :roles => {},
-              :run_lists => { 
-                "client" => %w/recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] recipe[vagrant-post::client]/,
-                "server" => %w/recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] recipe[chef-server::rubygems-install]', 'recipe[vagrant-post::server]/
-              },
-              :boxes => {
-                "opscode-ubuntu-12.04" =>  "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-ubuntu-12.04.box",
-                "opscode-centos-6.3" => "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-centos-6.3.box"
-              },
-              :network => "172.30.9"
-            }
-
-        puts "creating a standard defaults file in #{defaults_file}"
-          File.open(defaults_file,"w") do |f|
-            f.write(JSON.pretty_generate(json_data))
-          end
-      end
-
-      defaults JSON.parse(File.read(defaults_file))
-    end
- 
-    def defaults_file 
-      @defaults_file ||=  File.expand_path File.dirname(__FILE__)  + "/.sandbox.json"
-    end
-
-    def defaults(value=nil)
-      @defaults = value if value
-      @defaults 
-    end
-
-    # return this box's url
-    def url
-      if defaults["vms"].has_key? box
-        if defaults["vms"][box].has_key? "box"
-          vbox = defaults["vms"][box]["box"]
-          return defaults["boxes"][vbox] 
-        end
-      end
-    end
-
-    def network
-      defaults["network"]
-    end
-
-    #
-    # pulls the vagrant_box for the current box
-    def vagrant_box
-      if defaults["vms"].has_key? box
-        if defaults["vms"][box].has_key? "box"
-          return defaults["vms"][box]["box"]
-        end
-      end
-    end
-
-    def vm
-      if defaults["vms"].has_key? box
-        return defaults["vms"][box]
-      end
-      raise ArgumentError, "No box found named #{box}"
-    end
-
-    def run_list
-      if vm['run_list'].is_a? String
-        list= vm['run_list']
-        if defaults['run_lists'].has_key? list
-          return defaults['run_lists'][list]
-        end
-      end
-      raise ArgumentError, "You asked to use run_list '#{list}' but its not in config "
-    end
-
-    def machines
-      defaults['vms'].keys
-    end
-
+  def self.box(value=nil)
+    @box = value if value 
+    @box
   end
+
+  def self.config
+    # read in ext data
+    unless File.exists?(defaults_file)
+      box "server"
+
+      default_run_list = %w/ recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] /
+      json_data = {
+            :vms => {
+              "server" =>  { :box => "opscode-ubuntu-12.04",
+                             :run_list => "server",
+                             :attribs => {},
+                             :server => true
+                            },
+              "client1" => { :box => "opscode-ubuntu-12.04",
+                             :run_list => "client",
+                             :attribs => {} }
+            },
+            :bags => {},
+            :environments => {},
+            :roles => {},
+            :run_lists => { 
+              "client" => %w/recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] recipe[vagrant-post::client]/,
+              "server" => %w/recipe[bash::rcfiles] recipe[vim] recipe[tmux] recipe[apt] recipe[chef-server::rubygems-install] recipe[vagrant-post::server]/
+            },
+            :boxes => {
+              "opscode-ubuntu-12.04" =>  "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-ubuntu-12.04.box",
+              "opscode-centos-6.3" => "https://opscode-vm.s3.amazonaws.com/vagrant/boxes/opscode-centos-6.3.box"
+            },
+            :network => "172.30.9"
+          }
+
+      puts "creating a standard defaults file in #{defaults_file}"
+        File.open(defaults_file,"w") do |f|
+          f.write(JSON.pretty_generate(json_data))
+        end
+    end
+
+    defaults JSON.parse(File.read(defaults_file))
+  end
+ 
+  def self.defaults_file 
+    @defaults_file ||=  File.expand_path File.dirname(__FILE__)  + "/.sandbox.json"
+  end
+
+  def self.defaults(value=nil)
+    @defaults = value if value
+    @defaults 
+  end
+
+  # return this box's url
+  def self.url
+    if defaults["vms"].has_key? box
+      if defaults["vms"][box].has_key? "box"
+        vbox = defaults["vms"][box]["box"]
+        return defaults["boxes"][vbox] 
+      end
+    end
+  end
+
+  def self.network
+    defaults["network"]
+  end
+
+  #
+  # pulls the vagrant_box for the current box
+  def self.vagrant_box
+    if defaults["vms"].has_key? box
+      if defaults["vms"][box].has_key? "box"
+        return defaults["vms"][box]["box"]
+      end
+    end
+  end
+
+  def self.vm
+    if defaults["vms"].has_key? box
+      return defaults["vms"][box]
+    end
+    raise ArgumentError, "No box found named #{box}"
+  end
+
+  def self.run_list
+    if vm['run_list'].is_a? String
+      list= vm['run_list']
+      if defaults['run_lists'].has_key? list
+        return defaults['run_lists'][list]
+      end
+    end
+    raise ArgumentError, "You asked to use run_list '#{list}' but its not in config "
+  end
+
+  def self.machines
+    defaults['vms'].keys
+  end
+
 end
 

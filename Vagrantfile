@@ -37,8 +37,6 @@ Vagrant::Config.run do |config|
       server.vm.box_url = Sandbox.url 
       server.vm.host_name = "#{vm}.vm"
       server.vm.network  :hostonly, "#{network}.#{ip}"
-      server.berkshelf.node_name  = "vagrant"
-      server.berkshelf.client_key = "chef/vagrant.pem" 
       server.vm.provision :chef_client do |chef|
         chef.add_recipe "vagrant-post::client"
         chef.chef_server_url = "http://#{network}.10:4000"
@@ -98,7 +96,6 @@ module Vagrant
 end
 
 class Sandbox
-
   def self.box(value=nil)
     @box = value if value 
     @box

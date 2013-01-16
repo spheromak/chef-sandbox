@@ -57,6 +57,7 @@ module Vagrant
       require 'chef'
       require 'chef/config'
       require 'chef/knife'
+
     end
 
     class ChefSolo 
@@ -82,7 +83,6 @@ module Vagrant
         begin 
           ::Chef::REST.new(::Chef::Config[:chef_server_url]).delete_rest("clients/#{node}")
           ::Chef::REST.new(::Chef::Config[:chef_server_url]).delete_rest("nodes/#{node}")
-
         rescue Net::HTTPServerException => e
           if e.message == '404 "Not Found"'
             @logger.info "Server says it doesn't exist continuing.."
@@ -92,8 +92,7 @@ module Vagrant
         rescue Exception => e
           @logger.warn "Caught error while cleaning node from server:\n #{e.message}\nYou will have to clean the client/node by hand"
         end
-
-      end
+      end     
     end
   end
 end

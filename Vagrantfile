@@ -23,7 +23,7 @@ Vagrant::Config.run do |config|
     server.vm.provision :chef_solo do |chef|
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
-      %w{bash::rcfiles vim tmux apt chef-server::rubygems-install vagrant-post::server}.each do |recipe|
+      %w{bash::rcfiles vim tmux apt chef-server::dev vagrant-post::server}.each do |recipe|
         chef.add_recipe recipe
       end
     end
@@ -85,12 +85,12 @@ module Vagrant
 
         rescue Net::HTTPServerException => e
           if e.message == '404 "Not Found"'
-            puts "Server says it doesn't exist continuing.."
+            @logger.info "Server says it doesn't exist continuing.."
           else 
-            puts e.message
-            puts e.backtrace
-            exit 1
+            @logger.warn "Server reported: #{e.message}\nYou will have to clean the client/node by hand"
           end
+        rescue Exception => e
+          @logger.warn "Caught error while cleaning node from server:\n #{e.message}\nYou will have to clean the client/node by hand"
         end
 
       end

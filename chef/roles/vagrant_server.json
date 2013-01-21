@@ -1,0 +1,21 @@
+{
+  "name": "vagrant_server",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    "chef-server": {
+      "prereleases": true,
+      "nightlies": true
+    }
+   },
+  "description": "Setup chef Server",
+  "run_list": [
+    "recipe[bash::rcfiles]",
+    "recipe[vim]",
+    "recipe[tmux]", 
+    "recipe[apt]",
+    "recipe[chef-server::rubygems-install]"
+  ],
+  "override_attributes": {
+  }
+}

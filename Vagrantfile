@@ -187,8 +187,10 @@ class Sandbox
       if defaults['run_lists'].has_key? list
         return defaults['run_lists'][list]
       end
+      raise ArgumentError, "You asked to use run_list '#{list}' but its not in config "
+    else
+      return vm['run_list']
     end
-    raise ArgumentError, "You asked to use run_list '#{list}' but its not in config "
   end
 
   def self.machines

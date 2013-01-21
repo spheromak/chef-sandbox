@@ -1,0 +1,17 @@
+{
+  "name": "vagrant_client",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+  },
+  "description": "Setup chef Server",
+  "run_list": [
+    "recipe[bash::rcfiles]",
+    "recipe[vim]",
+    "recipe[tmux]", 
+    "recipe[apt]",
+    "recipe[vagrant-post::client]"
+  ],
+  "override_attributes": {
+  }
+}

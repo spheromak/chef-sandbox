@@ -5,11 +5,12 @@
 
 site :opscode
 
-cookbook 'chef-server', github: 'opscode-cookbooks/chef-server'
+cookbook 'chef-server', github: 'opscode-cookbooks/chef-server', branch: '1.1.0'
 cookbook 'ohai', github: 'opscode-cookbooks/ohai'
 cookbook 'apt', github: 'opscode-cookbooks/apt'
 cookbook 'erlang', github: 'opscode-cookbooks/erlang'
 cookbook 'vim'
+cookbook 'git'
 cookbook 'tmux'
 cookbook 'build-essential'
 cookbook 'gecode'

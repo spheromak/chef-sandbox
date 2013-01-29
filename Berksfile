@@ -5,7 +5,7 @@
 
 site :opscode
 
-cookbook 'chef-server', git: 'git://github.com/opscode-cookbooks/chef-server.git'
+cookbook 'chef-server', git: 'git://github.com/opscode-cookbooks/chef-server.git', branch: 'chef10'
 cookbook 'ohai', git: 'git://github.com/opscode-cookbooks/ohai.git'
 cookbook 'apt', git: 'https://github.com/opscode-cookbooks/apt'
 cookbook 'vim'

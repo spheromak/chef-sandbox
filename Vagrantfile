@@ -23,7 +23,7 @@ Vagrant::Config.run do |config|
     server.vm.provision :chef_solo do |chef|
       chef.data_bags_path = "chef/data_bags"
       chef.roles_path =  "chef/roles"
-      %w{bash::rcfiles vim tmux apt chef-server::dev vagrant-post::server}.each do |recipe|
+      %w{bash::rcfiles vim tmux apt chef-server::rubygems-install vagrant-post::server}.each do |recipe|
         chef.add_recipe recipe
       end
     end
@@ -35,8 +35,8 @@ Vagrant::Config.run do |config|
     client.vm.network :hostonly, "192.168.1.11"
     client.vm.network :bridged
 
-    client.berkshelf.node_name  = "vagrant"
-    client.berkshelf.client_key = "chef/vagrant.pem" 
+    #client.berkshelf.node_name  = "vagrant"
+    #client.berkshelf.client_key = "chef/vagrant.pem" 
 
     client.vm.provision :chef_client do |chef|
       chef.add_recipe "vagrant-post::client"
